@@ -3,6 +3,7 @@ opengles-object_container
 
 library that simplifies the OpenGL/ES programming, tested using EGL in the Raspbian/Raspberry Pi board.
 
+```
 0. Introduction
 
 object_container is a implementation of a class encapsulating coordinates
@@ -75,5 +76,6 @@ object_container. the suggestion is trying to read the code in the order
 first_basic_example-no_textures.c -> first_basic_example.c ->
 example_object_container.c
 
+```
 
 
