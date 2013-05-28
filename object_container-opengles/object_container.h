@@ -15,6 +15,7 @@ struct object { /* a polygon or a solid */
 	size_t texture_pos_on_container;
 	GLuint texture_object;
 	char *texture_buffer;
+	GLsizei texture_width, texture_height;
 };
 
 struct object_linked_list {
@@ -40,6 +41,8 @@ struct object_container {
 	GLfloat translate_x;
 	GLfloat translate_y;
 	GLfloat translate_z;
+	GLuint *texture_objects;
+	size_t num_of_textures;
 };
 
 struct object *object_new(size_t num_of_vertices, GLfloat *vertex_coordinates,

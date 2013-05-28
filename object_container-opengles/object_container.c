@@ -20,29 +20,15 @@ struct object *object_new(size_t num_of_vertices, GLfloat *vertex_coordinates,
     object->texture_coordinates = texture_coordinates;
 
 	object->texture_buffer = texture_buffer;
+	object->texture_width  = texture_width;
+	object->texture_height = texture_height;
 
-	if (texture_buffer == NULL) {
-        /* TODO: now texture_object isn't a pointer, is 0 a safe value to
-        declare texture_object? isn't 0 the value of a valid texture_object?
-        */
-    } else {
-        glGenTextures(1, &object->texture_object);
-        glBindTexture(GL_TEXTURE_2D, object->texture_object);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_width,
-             texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                                                           (GLfloat)GL_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                                                           (GLfloat)GL_NEAREST);
-	}
 	return object;
 }
 
 void object_delete(struct object *object)
 {
 	assert(object != NULL);
-	if (object->texture_buffer != NULL)
-		glDeleteTextures(1, &object->texture_object);
 	free(object);
 }
 
@@ -68,6 +54,8 @@ struct object_container *object_container_new()
 	object_container->color_coordinates_size = 0;
 	object_container->texture_coordinates = NULL;
 	object_container->texture_coordinates_size = 0;
+	object_container->texture_objects = NULL;
+	object_container->num_of_textures = 0;
 	return object_container;
 }
 
@@ -84,6 +72,10 @@ void object_container_delete_objects(struct object_container *object_container)
 		free(link);
 	}
 	object_container->object_list_end = NULL;
+	if (object_container->num_of_textures)
+		glDeleteTextures(object_container->num_of_textures,
+	                                         &object_container->texture_objects[0]);
+
 }
 
 void object_container_delete(struct object_container *object_container)
@@ -133,6 +125,12 @@ void object_container_add_object(struct object_container *object_container,
 	assert(object_container->is_prepared_to_draw == 0);
 	assert(object != NULL);
 	object_container->num_of_objects++;
+
+	/* FIXME: num_of_textures affected when textures are resued. */
+	if (object->texture_buffer != NULL) object_container->num_of_textures++;
+	assert(object_container->num_of_textures <=
+                                              object_container->num_of_objects);
+
 	object_container->vertex_coordinates_size  += object->num_of_vertices *
 					       3 /* (x,y,z)*/ * sizeof(GLfloat);
 	object_container->color_coordinates_size   += object->num_of_vertices *
@@ -167,11 +165,16 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 {
 	struct object_linked_list *object_list;
 	GLfloat *dest_buffer, *src_buffer;
-	size_t i, n, dest_vertex_pos, dest_color_pos, dest_texture_pos,
-							     vertex_accumulator;
-
+	size_t i, j, n, dest_vertex_pos, dest_color_pos, dest_texture_pos,
+                                                             vertex_accumulator;
 	assert(object_container != NULL);
 	assert(object_container->is_prepared_to_draw == 0);
+
+	object_container->texture_objects = (GLuint *) malloc(sizeof(GLuint*) *
+											 object_container->num_of_textures);
+	assert(object_container->texture_objects);
+	glGenTextures(object_container->num_of_textures,
+                                         &object_container->texture_objects[0]);
 
 	object_container->vertex_coordinates = (GLfloat *)
 			      malloc(object_container->vertex_coordinates_size);
@@ -192,6 +195,7 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 	dest_color_pos = 0;
 	dest_texture_pos = 0;
 	vertex_accumulator = 0;
+	j = 0;
 	while (object_list != NULL) {
 		/* copy data from object arrays to container arrays ... */
 		assert(object_list->object != NULL);
@@ -270,6 +274,23 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 		object_list->object->texture_pos_on_container = dest_texture_pos;
 		dest_texture_pos += (size_t) n/sizeof(GLfloat);
 
+        /* 4.  Bind textures */
+		if (object_list->object->texture_buffer != NULL) {
+
+			assert(j < object_container->num_of_textures);
+			object_list->object->texture_object =
+										   object_container->texture_objects[j];
+			glBindTexture(GL_TEXTURE_2D, object_container->texture_objects[j]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+											 object_list->object->texture_width,
+								object_list->object->texture_height, 0, GL_RGBA,
+						 GL_UNSIGNED_BYTE, object_list->object->texture_buffer);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+														   (GLfloat)GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+														   (GLfloat)GL_NEAREST);
+			j++;
+		}
 
 		/* ... and step */
 		object_list = object_list->next;
