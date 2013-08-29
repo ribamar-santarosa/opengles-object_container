@@ -1,7 +1,7 @@
 CFLAGS=-Wall
 LDFLAGS=-L/opt/vc/lib/ -lGLESv2  -lEGL  -lbcm_host -lvcos -lvchiq_arm
 INCLUDES=-I/opt/vc/include/ -I/opt/vc/include/interface/vcos/pthreads \
--I../helpers -I../object_container-opengles
+-I../helpers -I../object_container-opengles -I/opt/vc/include/interface/vmcs_host/linux/
 TARGETS=first_basic_example first_basic_example-no_textures # first_basic_example
 
 head: example_object_container.c ../helpers/keyboard.h ../helpers/keyboard.c ../object_container-opengles/object_container.h ../object_container-opengles/object_container.c
