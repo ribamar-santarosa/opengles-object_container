@@ -2,7 +2,7 @@
 #define __OBJECT_CONTAINER__H__
 
 #include <stdlib.h>
-#include <GLES/gl.h>
+#include <GLES2/gl2.h>
 
 struct object { /* a polygon or a solid */
 	size_t num_of_vertices;
@@ -17,6 +17,24 @@ struct object { /* a polygon or a solid */
 	char *texture_buffer;
 	GLsizei texture_width, texture_height;
 };
+
+struct shaders_state {
+   GLuint verbose;
+   GLuint vshader;
+   GLuint fshader;
+   GLuint mshader;
+   GLuint program;
+   GLuint program2;
+   GLuint tex_fb;
+   GLuint tex;
+   GLuint buf;
+// julia attribs
+   GLuint unif_color, attr_vertex, unif_scale, unif_offset, unif_tex, unif_centre; 
+// mandelbrot attribs
+   GLuint attr_vertex2, unif_scale2, unif_offset2, unif_centre2;
+};
+
+struct shaders_state _state, *state=&_state;
 
 struct object_linked_list {
 	struct object *object;
@@ -44,6 +62,9 @@ struct object_container {
 	GLuint *texture_objects;
 	size_t num_of_textures;
 };
+
+
+void init_shaders(struct shaders_state *state);
 
 struct object *object_new(size_t num_of_vertices, GLfloat *vertex_coordinates,
  GLfloat *color_coordinates, GLfloat *texture_coordinates, char *texture_buffer,
