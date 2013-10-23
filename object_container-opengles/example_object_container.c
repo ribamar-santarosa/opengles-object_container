@@ -299,7 +299,7 @@ int main(int argc, char **argv)
 		object_container_delete(object_container);
 		object_container = object_container_new();
 		count_fps();
-		key_pressed = keyboard_read(keyboard);
+		if (keyboard) key_pressed = keyboard_read(keyboard);
 		eglSwapBuffers(state.display, state.surface);
 	} while (key_pressed != KEY_ESC);
 
