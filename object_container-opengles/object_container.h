@@ -16,9 +16,10 @@ struct object { /* a polygon or a solid */
 	GLuint texture_object;
 	char *texture_buffer;
 	GLsizei texture_width, texture_height;
-};
+}; 
 
 struct shaders_state {
+   unsigned int checksum;
    GLuint verbose;
    GLuint vshader;
    GLuint fshader;
@@ -33,8 +34,6 @@ struct shaders_state {
 // mandelbrot attribs
    GLuint attr_vertex2, unif_scale2, unif_offset2, unif_centre2;
 };
-
-struct shaders_state _state, *state=&_state;
 
 struct object_linked_list {
 	struct object *object;
@@ -61,10 +60,9 @@ struct object_container {
 	GLfloat translate_z;
 	GLuint *texture_objects;
 	size_t num_of_textures;
+	struct shaders_state shaders_state;
 };
 
-
-void init_shaders(struct shaders_state *state);
 
 struct object *object_new(size_t num_of_vertices, GLfloat *vertex_coordinates,
  GLfloat *color_coordinates, GLfloat *texture_coordinates, char *texture_buffer,

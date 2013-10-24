@@ -28,18 +28,60 @@ void showprogramlog(GLint shader)
 
 void init_shaders(struct shaders_state *state)
 {
+   		static int a = 0;
+   		static int debug_next_time = 1;
+		int screen_width = 1280; // TODO FIXME!!!!
+		int screen_height = 1024; // TODO FIXME!!!!
+
+
+
+
    static const GLfloat vertex_data[] = {
         -1.0,-1.0,1.0,1.0,
-        1.0,-1.0,1.0,1.0,
-        1.0,1.0,1.0,1.0,
-        -1.0,1.0,1.0,1.0
+         1.0,-1.0,1.0,1.0,
+         1.0, 1.0,1.0,1.0,
+        -1.0, 1.0,1.0,1.0
+   };
+   static const GLfloat vertex_data_2[] = { /* primeiro quadrante */
+        -1.0,-0.0,1.0,1.0,
+         0.0,-0.0,1.0,1.0,
+         0.0, 1.0,1.0,1.0,
+        -1.0 ,1.0,1.0,1.0
+   };
+   static const GLfloat vertex_data_3[] = { /* quarto quadrante */
+        -0.0,-1.0,1.0,1.0,
+         1.0,-1.0,1.0,1.0,
+         1.0, 0.0,1.0,1.0,
+        -0.0, 0.0,1.0,1.0
+   };
+   static const GLfloat vertex_data_23[] = { /* primeiro e quarto quadrantes */
+        /* primeiro quadrante */
+        -1.0,-0.0,1.0,1.0,
+         0.0,-0.0,1.0,1.0,
+         0.0, 1.0,1.0,1.0,
+        -1.0 ,1.0,1.0,1.0,
+        /* quarto quadrante */
+        -0.0,-1.0,1.0,1.0,
+         1.0,-1.0,1.0,1.0,
+         1.0, 0.0,1.0,1.0,
+        -0.0, 0.0,1.0,1.0
+   };
+   static const GLfloat vertex_data_triangles[] = { /* two triangles */
+        /* primeiro triangulo */
+        -1.0, 0.0,1.0,1.0,
+         0.0, 0.0,1.0,1.0,
+         0.0,-1.0,1.0,1.0,
+        /* segundo triangulo */
+         0.0, 1.0,1.0,1.0,
+         1.0, 1.0,1.0,1.0,
+         1.0, 0.0,1.0,1.0,
    };
    const GLchar *vshader_source =
               "attribute vec4 vertex;"
               "varying vec2 tcoord;"
               "void main(void) {"
               " vec4 pos = vertex;"
-              " gl_Position = pos;"
+              " gl_Position = pos*0.05;"
               " tcoord = vertex.xy*0.5+0.5;"
               "}";
       
@@ -88,6 +130,7 @@ void init_shaders(struct shaders_state *state)
 "void main(void) {"
 "  float intensity;"
 "  vec4 color2;"
+/*
 "  float ar=(gl_FragCoord.x-centre.x)*scale.x;"
 "  float ai=(gl_FragCoord.y-centre.y)*scale.y;"
 "  float cr=(offset.x-centre.x)*scale.x;"
@@ -95,12 +138,13 @@ void init_shaders(struct shaders_state *state)
 "  float tr,ti;"
 "  float col=0.0;"
 "  float p=0.0;"
-"  int i=0;"
 "  vec2 t2;"
 "  t2.x=tcoord.x+(offset.x-centre.x)*(0.5/centre.y);"
 "  t2.y=tcoord.y+(offset.y-centre.y)*(0.5/centre.x);"
 "  for(int i2=1;i2<16;i2++)"
 "  {"
+"    tr=ar*ar-ai*ai+cr;"
+"    ti=2.0*ar*ai+ci;"
 "    tr=ar*ar-ai*ai+cr;"
 "    ti=2.0*ar*ai+ci;"
 "    p=tr*tr+ti*ti;"
@@ -113,11 +157,24 @@ void init_shaders(struct shaders_state *state)
 "    }"
 "  }"
 "  color2 = vec4(0,float(i)*0.0625,0,1);"
-"  color2 = color2+texture2D(tex,t2);"
-"  gl_FragColor = color2;"
+*/
+//"  color2 = color2+texture2D(tex,t2);"
+//"  color2 = vec4(1,0,1,1);"
+"    if (gl_FragCoord.x > offset.x)"
+"    {"
+//"        color2 = vec4(0,0.325,0,1);"
+"        gl_FragColor = vec4(0,0.325,0,1);"
+"    }"
+//"    else if (gl_FragCoord.y > offset.y)"
+"    else "
+"    {"
+//"        color2 = vec4(0,0.325,1,1);"
+"        gl_FragColor = vec4(0,0.325,1,1);"
+"    }"
 "}";
 
         state->vshader = glCreateShader(GL_VERTEX_SHADER);
+		assert(state->vshader);
         glShaderSource(state->vshader, 1, &vshader_source, 0);
         glCompileShader(state->vshader);
         check();
@@ -143,6 +200,7 @@ void init_shaders(struct shaders_state *state)
 
         // julia 
         state->program = glCreateProgram();
+		assert(state->program);
         glAttachShader(state->program, state->vshader);
         glAttachShader(state->program, state->fshader);
         glLinkProgram(state->program);
@@ -159,6 +217,8 @@ void init_shaders(struct shaders_state *state)
         state->unif_centre = glGetUniformLocation(state->program, "centre");
 
         // mandelbrot
+
+/*
         state->program2 = glCreateProgram();
         glAttachShader(state->program2, state->vshader);
         glAttachShader(state->program2, state->mshader);
@@ -174,7 +234,8 @@ void init_shaders(struct shaders_state *state)
         state->unif_centre2 = glGetUniformLocation(state->program2, "centre");
         check();
    
-        glClearColor ( 0.0, 1.0, 1.0, 1.0 );
+*/
+        //glClearColor ( 0.0, 1.0, 1.0, 1.0 );
         
         glGenBuffers(1, &state->buf);
 
@@ -186,7 +247,7 @@ void init_shaders(struct shaders_state *state)
         glBindTexture(GL_TEXTURE_2D,state->tex);
         check();
         // glActiveTexture(0)
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,640,480,0,GL_RGB,GL_UNSIGNED_SHORT_5_6_5,0);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,screen_width,screen_height,0,GL_RGB,GL_UNSIGNED_SHORT_5_6_5,0);
         check();
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -201,17 +262,75 @@ void init_shaders(struct shaders_state *state)
         glBindFramebuffer(GL_FRAMEBUFFER,0);
         check();
         // Prepare viewport
-        glViewport ( 0, 0, 640, 480 );
+        glViewport ( 0, 0, screen_width, screen_height );
         check();
         
         // Upload vertex data to a buffer
         glBindBuffer(GL_ARRAY_BUFFER, state->buf);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data),
-                             vertex_data, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_triangles),
+                             vertex_data_triangles, GL_STATIC_DRAW);
+/*
+*/
         glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
         glEnableVertexAttribArray(state->attr_vertex);
         check();
+
+
+
+
+		//#define check() assert(glGetError() == 0)
+		a++;
+		if(debug_next_time) {
+			printf("init_shaders(): initiating for the %ist/nd/th time\n", a);
+			printf("(checksum=%x)\n", state->checksum);
+			fflush(stdout);
+		}
 }
+
+static void draw_triangles(struct shaders_state *state, GLfloat cx, GLfloat cy, GLfloat scale, GLfloat x, GLfloat y)
+{
+		static int count = 0; 
+		static int debug_next_time = 1; 
+
+
+        // Now render to the main frame buffer
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        // Clear the background (not really necessary I suppose)
+        //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        //check();
+        
+        glBindBuffer(GL_ARRAY_BUFFER, state->buf);
+        check();
+        glUseProgram ( state->program );
+        check();
+        glBindTexture(GL_TEXTURE_2D,state->tex);
+        check();
+        glUniform4f(state->unif_color, 0.5, 0.5, 0.8, 1.0);
+        glUniform2f(state->unif_scale, scale, scale);
+        glUniform2f(state->unif_offset, x, y);
+        glUniform2f(state->unif_centre, cx, cy);
+        glUniform1i(state->unif_tex, 0); // I don't really understand this part, perhaps it relates to active texture?
+        check();
+        
+        glDrawArrays ( GL_TRIANGLE_FAN, 0, 3 );
+        glDrawArrays ( GL_TRIANGLE_FAN, 3, 3 );
+        check();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glFlush();
+        glFinish();
+        check();
+
+
+		count++;
+		if (debug_next_time) {
+			printf("draw_triangles(): running for %ist/nd/rd/th time (checksum=%x)\n", count, state->checksum);
+		}
+		//#define check() assert(glGetError() == 0)
+}
+
 
 
 struct object *object_new(size_t num_of_vertices, GLfloat *vertex_coordinates,
@@ -241,7 +360,9 @@ void object_delete(struct object *object)
 
 struct object_container *object_container_new()
 {
-        struct object_container *object_container = (struct object_container*)
+	static int shaders_initiated = 0;
+	static struct shaders_state shaders_state;
+	struct object_container *object_container = (struct object_container*)
 					malloc(sizeof(struct object_container));
 	assert(object_container != NULL);
 	object_container->object_list_begin = NULL;
@@ -263,6 +384,14 @@ struct object_container *object_container_new()
 	object_container->texture_coordinates_size = 0;
 	object_container->texture_objects = NULL;
 	object_container->num_of_textures = 0;
+	if (!shaders_initiated) {
+		//init_shaders(&object_container->shaders_state);
+		shaders_state.verbose = 1;
+		shaders_state.checksum = 0xca;
+		init_shaders(&shaders_state);
+		shaders_initiated++;
+	}
+	object_container->shaders_state = shaders_state;
 	return object_container;
 }
 
@@ -374,6 +503,8 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 	GLfloat *dest_buffer, *src_buffer;
 	size_t i, j, n, dest_vertex_pos, dest_color_pos, dest_texture_pos,
                                                              vertex_accumulator;
+	static  int debug_next_time = 0;
+
 	assert(object_container != NULL);
 	assert(object_container->is_prepared_to_draw == 0);
 
@@ -407,13 +538,16 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 		/* copy data from object arrays to container arrays ... */
 		assert(object_list->object != NULL);
 
-		printf("\n---\nobject_list->object->num_of_vertices=%d\n",
-					  object_list->object->num_of_vertices);
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("\n---\nobject_list->object->num_of_vertices=%d\n",
+										  object_list->object->num_of_vertices);
+			fflush(stdout);
+
+			printf("vertex copy\n");
+			fflush(stdout);
+		}
 
 		/* 1. copy of vertex_coordinates */
-		printf("vertex copy\n");
-		fflush(stdout);
 		assert(dest_vertex_pos <
 				     object_container->vertex_coordinates_size);
 
@@ -424,10 +558,12 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 			 &object_container->vertex_coordinates[dest_vertex_pos];
 		memcpy(dest_buffer, src_buffer, n);
 
-		printf("*** vertex_acc=%d\n", vertex_accumulator);
-		printf("*** n=%d (ie n=%d)\n", n, (int) (n/sizeof(GLfloat)));
-		printf("*** dest_vertex_pos=%d\n", dest_vertex_pos);
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("*** vertex_acc=%d\n", vertex_accumulator);
+			printf("*** n=%d (ie n=%d)\n", n, (int) (n/sizeof(GLfloat)));
+			printf("*** dest_vertex_pos=%d\n", dest_vertex_pos);
+			fflush(stdout);
+		}
 
 		/* deprecate pos_on_container? TODO */
 		object_list->object->vertex_pos_on_container = dest_vertex_pos;
@@ -437,8 +573,10 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 		vertex_accumulator += object_list->object->num_of_vertices;
 
 		/* 2. copy of color_coordinates */
-		printf("color copy\n");
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("color copy\n");
+			fflush(stdout);
+		}
 		assert(dest_color_pos <
 				      object_container->color_coordinates_size);
 
@@ -455,28 +593,42 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 
 
 		/* 3. copy of texture_coordinates */
-		printf("tex coord copy\n");
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("tex coord copy\n");
+			fflush(stdout);
+		}
 		assert(dest_texture_pos <
 				    object_container->texture_coordinates_size);
 
-		printf("3.1 n...\n");
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("3.1 n...\n");
+			fflush(stdout);
+		}
 		n = sizeof(GLfloat)
 			 * 2 /* (x,y) */ * object_list->object->num_of_vertices;
-		printf("3.2 source buf...\n");
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("3.2 source buf...\n");
+			fflush(stdout);
+		}
 		src_buffer = object_list->object->texture_coordinates;
-		printf("3.3 dest buf...\n");
-		fflush(stdout);
+
+		if (debug_next_time) {
+			printf("3.3 dest buf...\n");
+			fflush(stdout);
+		}
 		dest_buffer =
 			&object_container->texture_coordinates[dest_texture_pos];
-		printf("3.4 memcpy...\n");
-		fflush(stdout);
+
+		if (debug_next_time) {
+			printf("3.4 memcpy...\n");
+			fflush(stdout);
+		}
 		memcpy(dest_buffer, src_buffer, n);
 
-		printf("3.4 dest_texture_pos finish...\n");
-		fflush(stdout);
+		if (debug_next_time) {
+			printf("3.4 dest_texture_pos finish...\n");
+			fflush(stdout);
+		}
 		/* deprecate pos_on_container? TODO */
 		object_list->object->texture_pos_on_container = dest_texture_pos;
 		dest_texture_pos += (size_t) n/sizeof(GLfloat);
@@ -504,34 +656,40 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 	}
 	object_container->is_prepared_to_draw = 1;
 
-	printf("----\n");
-	printf("4.1 vertex_coordinates:");
-	for (i = 0;  i< object_container->vertex_coordinates_size/sizeof(GLfloat);
-								       i += 1) {
+	if (debug_next_time) {
+		printf("----\n");
+		printf("4.1 vertex_coordinates:");
+		for (i = 0;  i< object_container->vertex_coordinates_size/sizeof(GLfloat);
+																	   i += 1) {
 
-		if (i % 3 == 0 ) {
-			printf("\n");
+			if (i % 3 == 0 ) {
+				printf("\n");
+			}
+
+			printf("%2.5f \t", object_container->vertex_coordinates[i]);
+			fflush(stdout);
 		}
+		printf("\n");
 
-		printf("%2.5f \t", object_container->vertex_coordinates[i]);
-		fflush(stdout);
-	}
-	printf("\n");
+		printf("4.2 color_coordinates:");
 
-	printf("4.2 color_coordinates:");
-	for (i = 0;  i< object_container->color_coordinates_size/sizeof(GLfloat); i += 1) {
+		for (i = 0;  i< object_container->color_coordinates_size/sizeof(GLfloat); i += 1) {
 
-		if (i % 4 == 0) {
-			printf("\n");
+			if (i % 4 == 0) {
+				printf("\n");
+			}
+
+			printf("%2.5f \t", object_container->color_coordinates[i]);
+			fflush(stdout);
 		}
+		printf("\n");
 
-		printf("%2.5f \t", object_container->color_coordinates[i]);
-		fflush(stdout);
 	}
-	printf("\n");
 
 	/* send arrays to GPU - TODO maybe making this block a separate function
 	will make this lib more flexible for optmizations */
+	/* 
+	TODO code to be ported to gles 2.0
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0,
 			object_container_get_pointer_for_glVertexPointer(object_container));
@@ -541,6 +699,7 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(2, GL_FLOAT, 0,
 		  object_container_get_pointer_for_glTexCoordPointer(object_container));
+	*/
 
 }
 
@@ -593,11 +752,25 @@ void object_container_draw_objects(struct object_container *object_container)
 	GLuint *texture_object;
 	struct object_linked_list *object_list;
 	static char debug_next_time = 0;
+	static int x = 0;
+	static int y = 0;
+	int screen_width = 1280; // TODO FIXME!!!!
+	int screen_height = 1024; // TODO FIXME!!!!
+
+	x = (x + 2) % screen_width;
+	y = (y + 2) % screen_height;
+
+	draw_triangles(&object_container->shaders_state, screen_width/2, screen_height/2, 0.003, x, y);
+	return;
+
+	// GLfloat cx, GLfloat cy, GLfloat scale, GLfloat x, GLfloat y);
 
 	assert(object_container != NULL);
 	assert(object_container_is_prepared_to_draw(object_container));
 
 	/* 1. apply transformations */
+	/*
+	TODO code to be ported to gles 2.0
 	glLoadIdentity();
 
 	glTranslatef(object_container->translate_x,
@@ -609,7 +782,10 @@ void object_container_draw_objects(struct object_container *object_container)
 		glRotatef(object_container->angle_y, 0.f, 1.f, 0.f);
 	if (object_container->angle_z)
 		glRotatef(object_container->angle_z, 0.f, 0.f, 1.f);
+	*/
 
+	printf("object_container_draw_objects() begin\n");
+	fflush(stdout);
 	object_list = object_container->object_list_begin;
 
 	glClear( GL_DEPTH_BUFFER_BIT );
@@ -632,7 +808,11 @@ void object_container_draw_objects(struct object_container *object_container)
 		/* 2. bind texture */
 		if (texture_object != NULL) {
 			glEnable(GL_TEXTURE_2D);
+			/*
+			   TODO code to be ported to gles 2.0
+			   TODO was this actually needed in gles 1.1? try removing it.
 			glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			*/
 			glBindTexture(GL_TEXTURE_2D, *texture_object);
 		}
 
