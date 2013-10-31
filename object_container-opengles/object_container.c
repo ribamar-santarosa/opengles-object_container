@@ -25,6 +25,28 @@ void showprogramlog(GLint shader)
    printf("%d:program:\n%s\n", shader, log);
 }
 
+   static const GLfloat vertex_data_23[] = { /* primeiro e quarto quadrantes */
+        /* primeiro quadrante */
+        -1.0,-0.0,1.0,1.0,
+         0.0,-0.0,1.0,1.0,
+         0.0, 1.0,1.0,1.0,
+        -1.0 ,1.0,1.0,1.0,
+        /* quarto quadrante */
+        -0.0,-1.0,1.0,1.0,
+         1.0,-1.0,1.0,1.0,
+         1.0, 0.0,1.0,1.0,
+        -0.0, 0.0,1.0,1.0
+   };
+   static const GLfloat vertex_data_triangles[] = { /* two triangles */
+        /* primeiro triangulo */
+        -1.0, 0.0,1.0,1.0,
+         0.0, 0.0,1.0,1.0,
+         0.0,-1.0,1.0,1.0,
+        /* segundo triangulo */
+         0.0, 1.0,1.0,1.0,
+         1.0, 1.0,1.0,1.0,
+         1.0, 0.0,1.0,1.0,
+   };
 
 void init_shaders(struct shaders_state *state)
 {
@@ -53,28 +75,6 @@ void init_shaders(struct shaders_state *state)
          1.0,-1.0,1.0,1.0,
          1.0, 0.0,1.0,1.0,
         -0.0, 0.0,1.0,1.0
-   };
-   static const GLfloat vertex_data_23[] = { /* primeiro e quarto quadrantes */
-        /* primeiro quadrante */
-        -1.0,-0.0,1.0,1.0,
-         0.0,-0.0,1.0,1.0,
-         0.0, 1.0,1.0,1.0,
-        -1.0 ,1.0,1.0,1.0,
-        /* quarto quadrante */
-        -0.0,-1.0,1.0,1.0,
-         1.0,-1.0,1.0,1.0,
-         1.0, 0.0,1.0,1.0,
-        -0.0, 0.0,1.0,1.0
-   };
-   static const GLfloat vertex_data_triangles[] = { /* two triangles */
-        /* primeiro triangulo */
-        -1.0, 0.0,1.0,1.0,
-         0.0, 0.0,1.0,1.0,
-         0.0,-1.0,1.0,1.0,
-        /* segundo triangulo */
-         0.0, 1.0,1.0,1.0,
-         1.0, 1.0,1.0,1.0,
-         1.0, 0.0,1.0,1.0,
    };
    const GLchar *vshader_source =
               "attribute vec4 vertex;"
@@ -264,18 +264,8 @@ void init_shaders(struct shaders_state *state)
         // Prepare viewport
         glViewport ( 0, 0, screen_width, screen_height );
         check();
-        
-        // Upload vertex data to a buffer
-        glBindBuffer(GL_ARRAY_BUFFER, state->buf);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_triangles),
-                             vertex_data_triangles, GL_STATIC_DRAW);
 /*
 */
-        glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
-        glEnableVertexAttribArray(state->attr_vertex);
-        check();
-
-
 
 
 		//#define check() assert(glGetError() == 0)
@@ -291,6 +281,27 @@ static void draw_triangles(struct shaders_state *state, GLfloat cx, GLfloat cy, 
 {
 		static int count = 0; 
 		static int debug_next_time = 1; 
+		int screen_width = 1280; // TODO FIXME!!!!
+		int screen_height = 1024; // TODO FIXME!!!!
+
+
+			// Upload vertex data to a buffer
+		printf("draw_triangles(): count\n");
+		glBindBuffer(GL_ARRAY_BUFFER, state->buf);
+
+		if((count%screen_width) < (screen_width/2) ) { /* draw triangles */
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_triangles),
+					vertex_data_triangles, GL_STATIC_DRAW);
+			glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
+		} else { /* draw rectangles */
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_23),
+					vertex_data_23, GL_STATIC_DRAW);
+			glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
+		}
+
+		glEnableVertexAttribArray(state->attr_vertex);
+		check();
+
 
 
         // Now render to the main frame buffer
@@ -313,8 +324,14 @@ static void draw_triangles(struct shaders_state *state, GLfloat cx, GLfloat cy, 
         glUniform1i(state->unif_tex, 0); // I don't really understand this part, perhaps it relates to active texture?
         check();
         
-        glDrawArrays ( GL_TRIANGLE_FAN, 0, 3 );
-        glDrawArrays ( GL_TRIANGLE_FAN, 3, 3 );
+		//if(count < (screen_width/2) ) {  /* draw triangles */
+		if((count%screen_width) < (screen_width/2) ) { /* draw triangles */
+			glDrawArrays ( GL_TRIANGLE_FAN, 0, 3 );
+			glDrawArrays ( GL_TRIANGLE_FAN, 3, 3 );
+		} else { /* draw rectangles */
+			glDrawArrays ( GL_TRIANGLE_FAN, 0, 4 );
+			glDrawArrays ( GL_TRIANGLE_FAN, 4, 4 );
+		}
         check();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
