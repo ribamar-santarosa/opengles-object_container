@@ -285,23 +285,6 @@ static void draw_triangles(struct shaders_state *state, GLfloat cx, GLfloat cy, 
 		int screen_height = 1024; // TODO FIXME!!!!
 
 
-			// Upload vertex data to a buffer
-		printf("draw_triangles(): count\n");
-		glBindBuffer(GL_ARRAY_BUFFER, state->buf);
-
-		if((count%screen_width) < (screen_width/2) ) { /* draw triangles */
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_triangles),
-					vertex_data_triangles, GL_STATIC_DRAW);
-			glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
-		} else { /* draw rectangles */
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_23),
-					vertex_data_23, GL_STATIC_DRAW);
-			glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
-		}
-
-		glEnableVertexAttribArray(state->attr_vertex);
-		check();
-
 
 
         // Now render to the main frame buffer
@@ -521,6 +504,10 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 	size_t i, j, n, dest_vertex_pos, dest_color_pos, dest_texture_pos,
                                                              vertex_accumulator;
 	static  int debug_next_time = 0;
+	static  int count = 0;
+	struct shaders_state *state;
+	int screen_width = 1280; // TODO FIXME!!!!
+	int screen_height = 1024; // TODO FIXME!!!!
 
 	assert(object_container != NULL);
 	assert(object_container->is_prepared_to_draw == 0);
@@ -717,6 +704,26 @@ void object_container_prepare_to_draw(struct object_container *object_container)
 	glTexCoordPointer(2, GL_FLOAT, 0,
 		  object_container_get_pointer_for_glTexCoordPointer(object_container));
 	*/
+			// Upload vertex data to a buffer
+	printf("prep_to_draw(): count=%i\n", count);
+	state = &object_container->shaders_state;
+
+	glBindBuffer(GL_ARRAY_BUFFER, state->buf);
+
+	if((count%screen_width) < (screen_width/2) ) { /* draw triangles */
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_triangles),
+				vertex_data_triangles, GL_STATIC_DRAW);
+		glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
+	} else { /* draw rectangles */
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data_23),
+				vertex_data_23, GL_STATIC_DRAW);
+		glVertexAttribPointer(state->attr_vertex, 4, GL_FLOAT, 0, 16, 0);
+	}
+
+	glEnableVertexAttribArray(state->attr_vertex);
+	check();
+	count++;
+
 
 }
 
